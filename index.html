@@ -1,0 +1,30 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>HTL Case Portal</title>
+<style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#2e1752,#4b2a7b 55%,#0f7c7c);font-family:Arial,Helvetica,sans-serif;color:#1d1b2e}
+.card{background:#fff;width:360px;max-width:92vw;border-radius:14px;box-shadow:0 20px 50px rgba(0,0,0,.35);padding:30px 30px 24px}
+.logo{width:54px;height:54px;border-radius:12px;background:#4b2a7b;color:#fff;font-weight:bold;font-size:20px;display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+h1{font-size:19px;margin:0 0 4px;color:#4b2a7b}p.s{font-size:14px;color:#666;margin:0 0 18px;line-height:1.45}
+label{font-size:12px;font-weight:bold;display:block;margin:10px 0 4px}input{width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #cfc8dc;border-radius:8px;font-size:14px}input:focus{outline:2px solid #4b2a7b;border-color:#4b2a7b}
+button{margin-top:16px;width:100%;padding:11px;border:0;border-radius:8px;background:#4b2a7b;color:#fff;font-size:15px;font-weight:bold;cursor:pointer}button:disabled{opacity:.6;cursor:wait}
+.err{color:#b3261e;font-size:13px;min-height:16px;margin-top:10px}.f{font-size:13px;color:#888;margin-top:14px;line-height:1.4}</style></head><body>
+<form class="card" id="g" autocomplete="off"><div class="logo">HTL</div><h1>HTL v. Efficient Logistics</h1>
+<p class="s">Confidential case portal prepared for Larry Kelly. Sign in with the username and password Xander sent you.</p>
+<label for="u">Username</label><input id="u" autocapitalize="none" spellcheck="false" required>
+<label for="p">Password</label><input id="p" type="password" required>
+<button id="b" type="submit">Sign in</button><div class="err" id="e"></div>
+<div class="f">Works on a phone or a computer. A computer gives the best view of the exhibits. Need help? Text Xander.</div></form>
+<script>
+const SALT="+Obczp8672Aw5l91Wzzhcw==",ITER=600000;
+const d=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+document.getElementById('g').addEventListener('submit',async ev=>{ev.preventDefault();const b=document.getElementById('b'),e=document.getElementById('e');e.textContent='';
+if(!(window.crypto&&crypto.subtle)){e.textContent='This browser cannot open the portal. Please try Chrome or Edge on a computer.';return;}
+b.disabled=true;b.textContent='Unlocking...';
+try{const u=document.getElementById('u').value.trim().toLowerCase(),p=document.getElementById('p').value;
+const km=await crypto.subtle.importKey('raw',new TextEncoder().encode(u+':'+p),'PBKDF2',false,['deriveKey']);
+const k=await crypto.subtle.deriveKey({name:'PBKDF2',salt:d(SALT),iterations:ITER,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['decrypt']);
+const r=await fetch(new URL('data/core.json',location.href));const j=await r.json();
+const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:d(j.iv)},k,d(j.ct));
+const o=JSON.parse(new TextDecoder().decode(pt));
+window.__HTLK=k;window.__HTLM=o.map;window.__HTLB=new URL('./',location.href).href;
+document.open();document.write(o.html);document.close();
+}catch(x){b.disabled=false;b.textContent='Sign in';e.textContent='That username or password is not right. Please check the text from Xander and try again.';}});
+</script></body></html>
